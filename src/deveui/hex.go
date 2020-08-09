@@ -1,17 +1,43 @@
 package deveui
 
 import (
-	"crypto/rand"
 	"encoding/hex"
+	"math/rand"
+	"time"
+
+	mt19937 "github.com/seehuhn/mt19937"
 )
 
+func NewDevEUIGenerator() *DevEUIGenerator {
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+	return &DevEUIGenerator{rng, make(map[string]bool)}
+}
+
+type DevEUIGenerator struct {
+	rng   *rand.Rand
+	known map[string]bool
+}
+
 // GenerateHexCode generates a random hex value of length.
-func GenerateHexCode(length int) (string, error) {
+func (d DevEUIGenerator) GeneratDevEUI(length int) (devEUI string, err error) {
 	// to reduce the amount of memory allocated divide the length by 2
 	// as encoded hex string are of length * 2
 	bytes := make([]byte, (length+1)/2)
-	if _, err := rand.Read(bytes); err != nil {
+
+	_, err = d.rng.Read(bytes)
+	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(bytes)[:length], nil
+
+	devEUI = hex.EncodeToString(bytes)[:length]
+
+	// If short code is know, recursively generate again until short code is not known
+	shortCode := devEUI[len(devEUI)-5:]
+	if d.known[shortCode] {
+		devEUI, err = d.GeneratDevEUI(length)
+	}
+	d.known[shortCode] = true
+
+	return devEUI, err
 }

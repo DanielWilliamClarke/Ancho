@@ -8,32 +8,37 @@ import (
 
 func TestGenerateUniqueHexCodes(t *testing.T) {
 
+	generator := deveui.NewDevEUIGenerator()
+	iterations := 1000
 	expectedDevEUILength := 16
 	totalDevEUIs := 100
 
-	known := make(map[string]bool)
-	devEUIs := make([]string, totalDevEUIs)
-	for i := 0; i < totalDevEUIs; i++ {
+	for iter := 0; iter < iterations; iter++ {
+		known := make(map[string]bool)
+		devEUIs := make([]string, totalDevEUIs)
 
-		eui, err := deveui.GenerateHexCode(expectedDevEUILength)
-		if err != nil {
-			t.Error("cannot generate devEUI")
+		for index := 0; index < totalDevEUIs; index++ {
+
+			eui, err := generator.GeneratDevEUI(expectedDevEUILength)
+			if err != nil {
+				t.Errorf("cannot generate devEUI: %v", err)
+			}
+
+			shortCode := eui[len(eui)-5:]
+			if known[shortCode] {
+				t.Fatalf("unique short code detected: iteration: %d, eui: %d", iter, index)
+			}
+			known[shortCode] = true
+
+			if len(eui) != expectedDevEUILength {
+				t.Error("devEUI has incorrect length")
+			}
+
+			devEUIs[index] = eui
 		}
 
-		shortCode := eui[len(eui)-5:]
-		if known[shortCode] {
-			t.Error("unique short code detected")
+		if len(devEUIs) != totalDevEUIs {
+			t.Error("devEUIs slice has incorrect length")
 		}
-		known[shortCode] = true
-
-		if len(eui) != expectedDevEUILength {
-			t.Error("devEUI has incorrect length")
-		}
-
-		devEUIs[i] = eui
-	}
-
-	if len(devEUIs) != totalDevEUIs {
-		t.Error("devEUIs slice has incorrect length")
 	}
 }
