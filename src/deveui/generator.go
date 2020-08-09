@@ -8,6 +8,10 @@ import (
 	mt19937 "github.com/seehuhn/mt19937"
 )
 
+type IDevEUIGenerator interface {
+	GeneratDevEUI(length int) (string, error)
+}
+
 func NewDevEUIGenerator() *DevEUIGenerator {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
@@ -19,7 +23,7 @@ type DevEUIGenerator struct {
 	known map[string]bool
 }
 
-// GenerateHexCode generates a random hex value of length.
+// GeneratDevEUI generates a unique random hex value of length.
 func (d DevEUIGenerator) GeneratDevEUI(length int) (devEUI string, err error) {
 	// to reduce the amount of memory allocated divide the length by 2
 	// as encoded hex string are of length * 2

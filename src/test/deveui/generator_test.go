@@ -6,7 +6,7 @@ import (
 	"dwc.com/ancho/deveui"
 )
 
-func TestGenerateUniqueHexCodes(t *testing.T) {
+func TestGenerateUniqueDevEUIs(t *testing.T) {
 
 	generator := deveui.NewDevEUIGenerator()
 	iterations := 1000
