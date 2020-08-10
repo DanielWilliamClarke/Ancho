@@ -64,11 +64,15 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 	}
 
 	// Allow SIGINT to trigger shutdown, but dont block waitgroup from joining
+	defer func() {
+		fmt.Println("Cleaning Up")
+		close(sigChannel)
+	}()
 	go func() {
 		<-sigChannel // received SIGINT or SIGTERM
 		close(shutdownChannel)
 		// Wait for all waitgroups to gracefully complete
-		fmt.Println("Quit signal received, gracefully shutdown goroutines...")
+		fmt.Println("Quit signal received, gracefully shutdown registration...")
 	}()
 
 	// Wait for goroutines to complete

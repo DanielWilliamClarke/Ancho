@@ -22,7 +22,7 @@ func main() {
 
 	registeredDevEUIs, errors := batcher.RegisterInParallel(devEUIs)
 
-	fmt.Printf("%d DevEUIs registered successfully ---------------- \n", len(errors))
+	fmt.Printf("%d DevEUIs registered failures ---------------- \n", len(errors))
 	for _, err := range errors {
 		log.Println(err)
 	}
