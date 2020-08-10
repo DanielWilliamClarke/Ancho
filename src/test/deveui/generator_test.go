@@ -6,7 +6,7 @@ import (
 	"dwc.com/ancho/deveui"
 )
 
-func TestGenerateUniqueDevEUIs(t *testing.T) {
+func Test_GenerateUniqueDevEUIs(t *testing.T) {
 
 	generator := deveui.NewDevEUIGenerator()
 	iterations := 1000
