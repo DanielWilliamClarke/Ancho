@@ -13,6 +13,13 @@ type IDevEUIGenerator interface {
 	GeneratDevEUIs(total int, devEUILength int) ([]string, error)
 }
 
+func ChunkDevEUIs(devEUIs []string, chunkSize int) (chunks [][]string) {
+	for chunkSize < len(devEUIs) {
+		devEUIs, chunks = devEUIs[chunkSize:], append(chunks, devEUIs[0:chunkSize:chunkSize])
+	}
+	return append(chunks, devEUIs)
+}
+
 func NewDevEUIGenerator() *DevEUIGenerator {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
@@ -57,11 +64,4 @@ func (d DevEUIGenerator) GeneratDevEUIs(total int, devEUILength int) ([]string, 
 		devEUIs[index] = devEUI
 	}
 	return devEUIs, nil
-}
-
-func ChunkDevEUIs(devEUIs []string, chunkSize int) (chunks [][]string) {
-	for chunkSize < len(devEUIs) {
-		devEUIs, chunks = devEUIs[chunkSize:], append(chunks, devEUIs[0:chunkSize:chunkSize])
-	}
-	return append(chunks, devEUIs)
 }

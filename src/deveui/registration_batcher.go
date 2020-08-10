@@ -15,9 +15,9 @@ type IRegistrationBatcher interface {
 
 func NewRegistrationBatcher(api IRegistrationClientAPI, maxRequests int) *RegistrationBatcher {
 	return &RegistrationBatcher{
-		WaitGroup:           &sync.WaitGroup{},
-		MaxInFlightRequests: maxRequests,
-		API:                 api,
+		waitGroup:           &sync.WaitGroup{},
+		maxInFlightRequests: maxRequests,
+		api:                 api,
 	}
 }
 
@@ -31,15 +31,15 @@ type parallelRegistrationConfig struct {
 }
 
 type RegistrationBatcher struct {
-	WaitGroup           *sync.WaitGroup
-	MaxInFlightRequests int
-	API                 IRegistrationClientAPI
+	waitGroup           *sync.WaitGroup
+	maxInFlightRequests int
+	api                 IRegistrationClientAPI
 }
 
 func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []error) {
 
 	// Divide devEUIs between workloads
-	devEUIBatches := ChunkDevEUIs(devEUIs, len(devEUIs)/r.MaxInFlightRequests)
+	devEUIBatches := ChunkDevEUIs(devEUIs, len(devEUIs)/r.maxInFlightRequests)
 
 	// Setup syscall channels
 	sigChannel := make(chan os.Signal)
@@ -51,14 +51,14 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 	errorChannel := make(chan error, len(devEUIs))
 
 	// Run Regestration goroutines
-	for index := 0; index < r.MaxInFlightRequests; index++ {
-		r.WaitGroup.Add(1)
+	for index := 0; index < r.maxInFlightRequests; index++ {
+		r.waitGroup.Add(1)
 		go r.runBatch(parallelRegistrationConfig{
 			registeredChannel: registeredChannel,
 			devEUIs:           devEUIBatches[index],
 			shutdownChannel:   shutdownChannel,
 			errorChannel:      errorChannel,
-			waitGroup:         r.WaitGroup,
+			waitGroup:         r.waitGroup,
 			goroutineIndex:    index,
 		})
 	}
@@ -69,14 +69,13 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 		close(sigChannel)
 	}()
 	go func() {
-		<-sigChannel // received SIGINT or SIGTERM
-		close(shutdownChannel)
-		// Wait for all waitgroups to gracefully complete
+		<-sigChannel           // received SIGINT or SIGTERM
+		close(shutdownChannel) // Signal all goroutines to shutdown
 		fmt.Println("Quit signal received, gracefully shutdown registration...")
 	}()
 
-	// Wait for goroutines to complete
-	r.WaitGroup.Wait()
+	// Wait for all waitgroups to gracefully complete
+	r.waitGroup.Wait()
 	fmt.Println("Registration Complete!")
 
 	return r.processDataChannels(registeredChannel, errorChannel)
@@ -92,7 +91,7 @@ func (r RegistrationBatcher) runBatch(config parallelRegistrationConfig) {
 			log.Printf("Shutdown registration batch: %d \n", config.goroutineIndex)
 			return
 		default:
-			err := r.API.Register(devEUI)
+			err := r.api.Register(devEUI)
 			if err != nil {
 				config.errorChannel <- err
 			} else {
@@ -110,9 +109,7 @@ func (r RegistrationBatcher) processDataChannels(registeredChannel chan string, 
 
 	registrationErrors := make([]error, 0)
 	for err := range errorChannel {
-		if err != nil {
-			registrationErrors = append(registrationErrors, err)
-		}
+		registrationErrors = append(registrationErrors, err)
 	}
 
 	registeredDevEUIs := make([]string, 0)

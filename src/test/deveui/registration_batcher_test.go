@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"dwc.com/ancho/deveui"
-	mock_deveui "dwc.com/ancho/test/mocks"
+	mock_deveui "dwc.com/ancho/mocks"
 )
 
 func Test_CanRunRegistrationInParallel(t *testing.T) {
@@ -17,7 +17,7 @@ func Test_CanRunRegistrationInParallel(t *testing.T) {
 	defer ctrl.Finish()
 	mockApi := mock_deveui.NewMockIRegistrationClientAPI(ctrl)
 
-	totalDevEUIs := 100
+	totalDevEUIs := 1000
 
 	mockApi.EXPECT().
 		Register(gomock.AssignableToTypeOf("test-string")).
@@ -25,7 +25,7 @@ func Test_CanRunRegistrationInParallel(t *testing.T) {
 		Return(nil)
 
 	//Set up batcher with mock
-	maxRequests := 10
+	maxRequests := 100
 	batcher := deveui.NewRegistrationBatcher(mockApi, maxRequests)
 
 	// Generate some uids

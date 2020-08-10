@@ -40,7 +40,7 @@ func (l LoRaWANClientAPI) Register(devEUI string) error {
 		return err
 	}
 
-	request, err := http.NewRequest("POST",
+	request, err := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("%s/sensor-onboarding-sample", apiHost),
 		bytes.NewBuffer(requestBody))
 
