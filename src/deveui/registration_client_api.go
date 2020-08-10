@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -13,10 +15,10 @@ const (
 )
 
 type IRegistrationClientAPI interface {
-	Register(devEUI string) (bool, error)
+	Register(devEUI string) error
 }
 
-func NewRegistrationAPI() *LoRaWANClientAPI {
+func NewRegistrationClientAPI() *LoRaWANClientAPI {
 	client := &http.Client{}
 	return &LoRaWANClientAPI{client}
 }
@@ -30,12 +32,12 @@ type devEUIBody struct {
 }
 
 // Register registers a given devEUI with the test LoRaWAN api
-func (l LoRaWANClientAPI) Register(devEUI string) (bool, error) {
+func (l LoRaWANClientAPI) Register(devEUI string) error {
 
 	requestBody, err := json.Marshal(devEUIBody{devEUI: devEUI})
 	if err != nil {
 		log.Printf("Could not marshal deveui into body: %v", err)
-		return false, err
+		return err
 	}
 
 	request, err := http.NewRequest("POST",
@@ -47,16 +49,19 @@ func (l LoRaWANClientAPI) Register(devEUI string) (bool, error) {
 
 	if err != nil {
 		log.Printf("Could not create API request: %v", err)
-		return false, err
+		return err
 	}
 
 	response, err := l.client.Do(request)
 	if err != nil {
 		log.Printf("LoRaWAN registration request failed: %v", err)
-		return false, err
+		return err
 	}
 
-	success := response.StatusCode == http.StatusOK
+	if response.StatusCode != http.StatusOK {
+		return errors.New(
+			fmt.Sprintf("DevEUI %s already Registered: %d", devEUI, response.StatusCode))
+	}
 
-	return success, nil
+	return nil
 }

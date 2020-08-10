@@ -8,16 +8,29 @@ import (
 )
 
 func main() {
-	generator := deveui.NewDevEUIGenerator()
-
+	requestsPerBatch := 10
 	totalDevEUIs := 100
-	devEUIs := make([]string, totalDevEUIs)
-	for i := 0; i < totalDevEUIs; i++ {
-		eui, err := generator.GeneratDevEUI(16)
-		if err != nil {
-			log.Fatalf("cannot generate devEUI [ %d: %v ]", i, err)
-		}
-		devEUIs[i] = eui
-		fmt.Println(eui)
+
+	generator := deveui.NewDevEUIGenerator()
+	registrationAPI := deveui.NewRegistrationClientAPI()
+	batcher := deveui.NewRegistrationBatcher(registrationAPI, requestsPerBatch)
+
+	devEUIs, err := generator.GeneratDevEUIs(totalDevEUIs, 16)
+	if err != nil {
+		log.Fatalf("cannot generate devEUI: %v", err)
 	}
+
+	registeredDevEUIs, errors := batcher.RegisterInParallel(devEUIs)
+
+	fmt.Printf("%d DevEUIs registered successfully ---------------- \n", len(errors))
+	for _, err := range errors {
+		log.Println(err)
+	}
+	fmt.Println("---------------------------------------------------")
+
+	fmt.Printf("%d DevEUIs registered successfully ---------------- \n", len(registeredDevEUIs))
+	for _, devEUI := range registeredDevEUIs {
+		fmt.Println(devEUI)
+	}
+	fmt.Println("---------------------------------------------------")
 }

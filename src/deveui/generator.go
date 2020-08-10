@@ -10,6 +10,7 @@ import (
 
 type IDevEUIGenerator interface {
 	GeneratDevEUI(length int) (string, error)
+	GeneratDevEUIs(total int, devEUILength int) ([]string, error)
 }
 
 func NewDevEUIGenerator() *DevEUIGenerator {
@@ -44,4 +45,23 @@ func (d DevEUIGenerator) GeneratDevEUI(length int) (devEUI string, err error) {
 	d.known[shortCode] = true
 
 	return devEUI, err
+}
+
+func (d DevEUIGenerator) GeneratDevEUIs(total int, devEUILength int) ([]string, error) {
+	devEUIs := make([]string, total)
+	for index := 0; index < total; index++ {
+		devEUI, err := d.GeneratDevEUI(devEUILength)
+		if err != nil {
+			return []string{}, err
+		}
+		devEUIs[index] = devEUI
+	}
+	return devEUIs, nil
+}
+
+func ChunkDevEUIs(devEUIs []string, chunkSize int) (chunks [][]string) {
+	for chunkSize < len(devEUIs) {
+		devEUIs, chunks = devEUIs[chunkSize:], append(chunks, devEUIs[0:chunkSize:chunkSize])
+	}
+	return append(chunks, devEUIs)
 }
