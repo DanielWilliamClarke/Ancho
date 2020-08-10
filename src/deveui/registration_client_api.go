@@ -44,9 +44,6 @@ func (l LoRaWANClientAPI) Register(devEUI string) error {
 		fmt.Sprintf("%s/sensor-onboarding-sample", apiHost),
 		bytes.NewBuffer(requestBody))
 
-	request.Header.Set("Content-type", "application/json")
-	request.Header.Set("Cache-Control", "private, no-store, max-age=0")
-
 	if err != nil {
 		log.Printf("Could not create API request: %v", err)
 		return err
