@@ -2,7 +2,6 @@ package deveui
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -10,36 +9,25 @@ import (
 )
 
 type IRegistrationBatcher interface {
-	RegisterInParallel(devEUIs []string) ([]string, []error)
+	RegisterInParallel(requiredDevEUIS int) ([]string, []error)
 }
 
-func NewRegistrationBatcher(api IRegistrationClientAPI, maxRequests int) *RegistrationBatcher {
+func NewRegistrationBatcher(routines IRegistrationRoutines, maxRequests int) *RegistrationBatcher {
 	return &RegistrationBatcher{
 		waitGroup:           &sync.WaitGroup{},
 		maxInFlightRequests: maxRequests,
-		api:                 api,
+		routines:            routines,
 	}
-}
-
-type parallelRegistrationConfig struct {
-	registeredChannel chan string
-	devEUIs           []string
-	shutdownChannel   chan struct{}
-	errorChannel      chan error
-	waitGroup         *sync.WaitGroup
-	goroutineIndex    int
 }
 
 type RegistrationBatcher struct {
 	waitGroup           *sync.WaitGroup
 	maxInFlightRequests int
-	api                 IRegistrationClientAPI
+	routines            IRegistrationRoutines
 }
 
-func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []error) {
-
-	// Divide devEUIs between workloads
-	devEUIBatches := ChunkDevEUIs(devEUIs, len(devEUIs)/r.maxInFlightRequests)
+// RegisterInParallel registers DevEUIS with the registration API in parallel, exactly requiredDevEUIS devEUIs will be registered
+func (r RegistrationBatcher) RegisterInParallel(requiredDevEUIS int) ([]string, []error) {
 
 	// Setup syscall channels
 	sigChannel := make(chan os.Signal)
@@ -47,15 +35,15 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 	shutdownChannel := make(chan struct{})
 
 	// Setup data channels
-	registeredChannel := make(chan string, len(devEUIs))
-	errorChannel := make(chan error, len(devEUIs))
+	registeredChannel := make(chan string, requiredDevEUIS)
+	errorChannel := make(chan error, requiredDevEUIS)
 
 	// Run Regestration goroutines
 	for index := 0; index < r.maxInFlightRequests; index++ {
 		r.waitGroup.Add(1)
-		go r.runBatch(parallelRegistrationConfig{
+		go r.routines.RunBatch(parallelRegistrationConfig{
 			registeredChannel: registeredChannel,
-			devEUIs:           devEUIBatches[index],
+			requiredDevEUIS:   requiredDevEUIS / r.maxInFlightRequests,
 			shutdownChannel:   shutdownChannel,
 			errorChannel:      errorChannel,
 			waitGroup:         r.waitGroup,
@@ -63,16 +51,12 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 		})
 	}
 
+	// Observe total registered DevEUIs
+	go r.routines.Observe(registeredChannel, requiredDevEUIS, shutdownChannel)
 	// Allow SIGINT to trigger shutdown, but dont block waitgroup from joining
-	defer func() {
-		fmt.Println("Cleaning Up")
-		close(sigChannel)
-	}()
-	go func() {
-		<-sigChannel           // received SIGINT or SIGTERM
-		close(shutdownChannel) // Signal all goroutines to shutdown
-		fmt.Println("Quit signal received, gracefully shutdown registration...")
-	}()
+	go r.routines.GracefulShutdown(sigChannel, shutdownChannel)
+	// cleanup observation and shutdown goroutines
+	defer r.routines.CleanUp(sigChannel)
 
 	// Wait for all waitgroups to gracefully complete
 	r.waitGroup.Wait()
@@ -81,28 +65,7 @@ func (r RegistrationBatcher) RegisterInParallel(devEUIs []string) ([]string, []e
 	return r.processDataChannels(registeredChannel, errorChannel)
 }
 
-func (r RegistrationBatcher) runBatch(config parallelRegistrationConfig) {
-	fmt.Printf("Starting registration batch: %d \n", config.goroutineIndex)
-	defer config.waitGroup.Done()
-
-	for _, devEUI := range config.devEUIs {
-		select {
-		case <-config.shutdownChannel:
-			log.Printf("Shutdown registration batch: %d \n", config.goroutineIndex)
-			return
-		default:
-			err := r.api.Register(devEUI)
-			if err != nil {
-				config.errorChannel <- err
-			} else {
-				config.registeredChannel <- devEUI
-			}
-		}
-	}
-
-	fmt.Printf("Registration batch %d complete \n", config.goroutineIndex)
-}
-
+// processDataChannels extracts values from the data channels and returns slices
 func (r RegistrationBatcher) processDataChannels(registeredChannel chan string, errorChannel chan error) ([]string, []error) {
 	close(errorChannel)
 	close(registeredChannel)

@@ -1,13 +1,14 @@
 package test
 
 import (
-	"log"
 	"testing"
 
 	"dwc.com/ancho/deveui"
 )
 
 func Test_GenerateUniqueDevEUIs(t *testing.T) {
+
+	// The main point of this test is to show that generator.GeneratDevEUI will only create unique devEUIs
 
 	generator := deveui.NewDevEUIGenerator()
 	iterations := 1000
@@ -40,45 +41,6 @@ func Test_GenerateUniqueDevEUIs(t *testing.T) {
 
 		if len(devEUIs) != totalDevEUIs {
 			t.Error("devEUIs slice has incorrect length")
-		}
-	}
-}
-
-func Test_CanGenerateXDevEUIs(t *testing.T) {
-	generator := deveui.NewDevEUIGenerator()
-	expectedDevEUILength := 16
-	totalDevEUIs := 100
-
-	devEUIs, err := generator.GeneratDevEUIs(totalDevEUIs, expectedDevEUILength)
-	if err != nil {
-		t.Errorf("cannot generate devEUI: %v", err)
-	}
-
-	if len(devEUIs) != totalDevEUIs {
-		t.Error("Incorrect number of batches created")
-	}
-}
-
-func Test_CanSplitIntoBatches(t *testing.T) {
-	generator := deveui.NewDevEUIGenerator()
-	expectedDevEUILength := 16
-	totalDevEUIs := 100
-	totalBatches := 10
-
-	devEUIs, err := generator.GeneratDevEUIs(totalDevEUIs, expectedDevEUILength)
-	if err != nil {
-		log.Fatalf("cannot generate devEUI: %v", err)
-	}
-
-	batches := deveui.ChunkDevEUIs(devEUIs, totalBatches)
-
-	if len(batches) != totalBatches {
-		t.Error("Incorrect number of batches created")
-	}
-
-	for _, batch := range batches {
-		if len(batch) != totalDevEUIs/totalBatches {
-			t.Error("Incorrect number of items in batch")
 		}
 	}
 }

@@ -4,7 +4,6 @@
   - [Build](#build)
   - [Test](#test)
   - [Coverage](#coverage)
-  - [Why Ancho? Because it's 31 degrees at 9pm](#why-ancho-because-its-31-degrees-at-9pm)
 
 ## Build
 
@@ -35,4 +34,4 @@ cd src
 start chrome ../test_results/index.html
 ```
 
-## Why Ancho? Because it's 31 degrees at 9pm
+`Why Ancho? Because it's 34 degrees at 9pm`

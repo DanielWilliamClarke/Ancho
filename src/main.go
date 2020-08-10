@@ -9,20 +9,15 @@ import (
 
 func main() {
 	// Setup
-	requestsPerBatch := 10
+	maxInFlightRequests := 10
 	totalDevEUIs := 100
 	generator := deveui.NewDevEUIGenerator()
 	registrationAPI := deveui.NewRegistrationClientAPI()
-	batcher := deveui.NewRegistrationBatcher(registrationAPI, requestsPerBatch)
-
-	// Generate
-	devEUIs, err := generator.GeneratDevEUIs(totalDevEUIs, 16)
-	if err != nil {
-		log.Fatalf("cannot generate devEUI: %v", err)
-	}
+	routines := deveui.NewRegistrationRoutines(registrationAPI, generator)
+	batcher := deveui.NewRegistrationBatcher(routines, maxInFlightRequests)
 
 	// Register
-	registeredDevEUIs, errors := batcher.RegisterInParallel(devEUIs)
+	registeredDevEUIs, errors := batcher.RegisterInParallel(totalDevEUIs)
 
 	// Output
 	fmt.Printf("%d DevEUIs failed ---------------- \n", len(errors))

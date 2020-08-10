@@ -20,6 +20,8 @@ func SetupRegistrationTests() registrationTestUtils {
 
 func Test_Integration_HitRegistrationEndpoint(t *testing.T) {
 
+	// the aim of this test is to ensure that the client api can hit the endpoint
+
 	utils := SetupRegistrationTests()
 
 	devEUI, err := utils.generator.GeneratDevEUI(16)
@@ -33,22 +35,9 @@ func Test_Integration_HitRegistrationEndpoint(t *testing.T) {
 	}
 }
 
-func Test_Integration_RegisteringDuplicatesResultsIn422(t *testing.T) {
-	// This test will always fail as the LoRaWan test API returns 200 OK even on a duplicate or empty devEUI registration
-	utils := SetupRegistrationTests()
-	devEUI, _ := utils.generator.GeneratDevEUI(16)
-	err := utils.api.Register(devEUI)
-	if err == nil {
-		t.Errorf("DevEUI already registered")
-	}
-	err = utils.api.Register(devEUI)
-	if err != nil {
-		t.Log("DevEUI duplicate detection failed - Is this a bug with the LoRaWAN endpoint?")
-		//t.Errorf("DevEUI duplicate detection failed")
-	}
-}
+func Test_Integration_Are422ErrorsRandom(t *testing.T) {
 
-func __Test_Integration_Are422ErrorsRandom(t *testing.T) {
+	// the aim of this test was to confirm my suspicions that the API was no reliable
 
 	utils := SetupRegistrationTests()
 	devEUI, _ := utils.generator.GeneratDevEUI(16)

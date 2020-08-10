@@ -1,7 +1,6 @@
 package test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -11,6 +10,8 @@ import (
 )
 
 func Test_CanRunRegistrationInParallel(t *testing.T) {
+
+	// the aim of this test is to show that we can run n number of goroutines and still generate the expected number of devEUIs
 
 	// Set up mocks
 	ctrl := gomock.NewController(t)
@@ -26,17 +27,12 @@ func Test_CanRunRegistrationInParallel(t *testing.T) {
 
 	//Set up batcher with mock
 	maxRequests := 100
-	batcher := deveui.NewRegistrationBatcher(mockApi, maxRequests)
-
-	// Generate some uids
 	generator := deveui.NewDevEUIGenerator()
-	devEUIs, err := generator.GeneratDevEUIs(totalDevEUIs, 16)
-	if err != nil {
-		log.Fatalf("cannot generate devEUI: %v", err)
-	}
+	routines := deveui.NewRegistrationRoutines(mockApi, generator)
+	batcher := deveui.NewRegistrationBatcher(routines, maxRequests)
 
 	// Run
-	data, errors := batcher.RegisterInParallel(devEUIs)
+	data, errors := batcher.RegisterInParallel(totalDevEUIs)
 
 	// Check
 	if len(errors) > 0 {
