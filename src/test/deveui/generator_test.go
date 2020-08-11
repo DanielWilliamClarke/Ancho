@@ -1,11 +1,8 @@
 package test
 
 import (
-	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/seehuhn/mt19937"
 
 	"dwc.com/ancho/deveui"
 )
@@ -13,9 +10,8 @@ import (
 func Test_GenerateUniqueDevEUIs(t *testing.T) {
 
 	// The main point of this test is to show that generator.GenerateDevEUI will only create unique devEUIs
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
-	generator := deveui.NewDevEUIGenerator(rng)
+	seed := time.Now().UnixNano()
+	generator := deveui.NewDevEUIGenerator(seed)
 	iterations := 1000
 	expectedDevEUILength := 16
 	totalDevEUIs := 100

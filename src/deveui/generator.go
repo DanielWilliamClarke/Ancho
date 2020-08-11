@@ -10,12 +10,12 @@ type IDevEUIGenerator interface {
 	GenerateDevEUI(length int) (string, error)
 }
 
-func NewDevEUIGenerator(rng *rand.Rand) *DevEUIGenerator {
-	return &DevEUIGenerator{rng, &sync.Map{}}
+func NewDevEUIGenerator(seed int64) *DevEUIGenerator {
+	rand.Seed(seed)
+	return &DevEUIGenerator{&sync.Map{}}
 }
 
 type DevEUIGenerator struct {
-	rng   *rand.Rand
 	known *sync.Map
 }
 
@@ -25,7 +25,7 @@ func (d DevEUIGenerator) GenerateDevEUI(length int) (devEUI string, err error) {
 	// as encoded hex string are of length * 2
 	bytes := make([]byte, (length+1)/2)
 
-	_, err = d.rng.Read(bytes)
+	_, err = rand.Read(bytes)
 	if err != nil {
 		return "", err
 	}

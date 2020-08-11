@@ -2,12 +2,10 @@ package test
 
 import (
 	"errors"
-	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/seehuhn/mt19937"
 
 	"dwc.com/ancho/deveui"
 	mock_deveui "dwc.com/ancho/mocks"
@@ -32,9 +30,8 @@ func Test_CanRunRegistrationInParallel(t *testing.T) {
 	//Set up batcher with mock
 	maxRequests := 100
 
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
-	generator := deveui.NewDevEUIGenerator(rng)
+	seed := time.Now().UnixNano()
+	generator := deveui.NewDevEUIGenerator(seed)
 	routines := deveui.NewRegistrationRoutines(mockApi, generator)
 	batcher := deveui.NewRegistrationBatcher(routines, maxRequests)
 
@@ -77,9 +74,8 @@ func Test_CanRunRegistrationInParallelWithRegistrationFailures(t *testing.T) {
 	//Set up batcher with mock
 	maxRequests := 10
 
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
-	generator := deveui.NewDevEUIGenerator(rng)
+	seed := time.Now().UnixNano()
+	generator := deveui.NewDevEUIGenerator(seed)
 	routines := deveui.NewRegistrationRoutines(mockApi, generator)
 	batcher := deveui.NewRegistrationBatcher(routines, maxRequests)
 

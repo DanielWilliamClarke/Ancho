@@ -1,3 +1,5 @@
 *.exe
 test_results/*
 !test_results/index.html
+idempotency_db
+src/api/__debug_bin

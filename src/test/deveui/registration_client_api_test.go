@@ -1,12 +1,9 @@
 package test
 
 import (
-	"math/rand"
 	"net/http"
 	"testing"
 	"time"
-
-	"github.com/seehuhn/mt19937"
 
 	"dwc.com/ancho/deveui"
 )
@@ -17,21 +14,19 @@ type registrationTestUtils struct {
 }
 
 func SetupRegistrationTests(url string) registrationTestUtils {
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
+	seed := time.Now().UnixNano()
 	client := &http.Client{}
 	return registrationTestUtils{
 		api:       deveui.LoRaWANClientAPI{client, url},
-		generator: deveui.NewDevEUIGenerator(rng),
+		generator: deveui.NewDevEUIGenerator(seed),
 	}
 }
 
 func SetupRegistrationTestsWithNew() registrationTestUtils {
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
+	seed := time.Now().UnixNano()
 	return registrationTestUtils{
 		api:       deveui.NewRegistrationClientAPI(),
-		generator: deveui.NewDevEUIGenerator(rng),
+		generator: deveui.NewDevEUIGenerator(seed),
 	}
 }
 
