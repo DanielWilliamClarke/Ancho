@@ -1,2 +1,3 @@
 *.exe
-test_results
+test_results/*
+!test_results/index.html

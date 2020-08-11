@@ -20,11 +20,12 @@ type IRegistrationClientAPI interface {
 
 func NewRegistrationClientAPI() *LoRaWANClientAPI {
 	client := &http.Client{}
-	return &LoRaWANClientAPI{client}
+	return &LoRaWANClientAPI{client, apiHost}
 }
 
 type LoRaWANClientAPI struct {
-	client *http.Client
+	Client *http.Client
+	Url    string
 }
 
 type devEUIBody struct {
@@ -41,7 +42,7 @@ func (l LoRaWANClientAPI) Register(devEUI string) error {
 	}
 
 	request, err := http.NewRequest(http.MethodPost,
-		fmt.Sprintf("%s/sensor-onboarding-sample", apiHost),
+		fmt.Sprintf("%s/sensor-onboarding-sample", l.Url),
 		bytes.NewBuffer(requestBody))
 
 	if err != nil {
@@ -49,7 +50,7 @@ func (l LoRaWANClientAPI) Register(devEUI string) error {
 		return err
 	}
 
-	response, err := l.client.Do(request)
+	response, err := l.Client.Do(request)
 	if err != nil {
 		log.Printf("LoRaWAN registration request failed: %v", err)
 		return err

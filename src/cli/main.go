@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
+
+	"github.com/seehuhn/mt19937"
 
 	"dwc.com/ancho/deveui"
 )
@@ -11,7 +15,11 @@ func main() {
 	// Setup
 	maxInFlightRequests := 10
 	totalDevEUIs := 100
-	generator := deveui.NewDevEUIGenerator()
+
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+
+	generator := deveui.NewDevEUIGenerator(rng)
 	registrationAPI := deveui.NewRegistrationClientAPI()
 	routines := deveui.NewRegistrationRoutines(registrationAPI, generator)
 	batcher := deveui.NewRegistrationBatcher(routines, maxInFlightRequests)

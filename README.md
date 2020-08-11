@@ -9,17 +9,25 @@
 
 ``` bash
   cd src
-  go build
 
-  ./ancho.exe #windows
-  ./ancho #linux
+  # Build CLI
+  go build ./cli
+
+  ./cli.exe #windows
+  ./cli #linux
+
+  # Build API
+  go build ./api
+
+  ./api.exe #windows
+  ./api #linu
 ```
 
 ## Test
 
 ```bash
 cd src
-go test ./test/...
+go test -v ./test/... # -v for verbose
 ```
 
 ## Coverage

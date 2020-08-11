@@ -4,18 +4,13 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"sync"
-	"time"
-
-	mt19937 "github.com/seehuhn/mt19937"
 )
 
 type IDevEUIGenerator interface {
-	GeneratDevEUI(length int) (string, error)
+	GenerateDevEUI(length int) (string, error)
 }
 
-func NewDevEUIGenerator() *DevEUIGenerator {
-	rng := rand.New(mt19937.New())
-	rng.Seed(time.Now().UnixNano())
+func NewDevEUIGenerator(rng *rand.Rand) *DevEUIGenerator {
 	return &DevEUIGenerator{rng, &sync.Map{}}
 }
 
@@ -24,8 +19,8 @@ type DevEUIGenerator struct {
 	known *sync.Map
 }
 
-// GeneratDevEUI generates a unique random hex value of length.
-func (d DevEUIGenerator) GeneratDevEUI(length int) (devEUI string, err error) {
+// GenerateDevEUI generates a unique random hex value of length.
+func (d DevEUIGenerator) GenerateDevEUI(length int) (devEUI string, err error) {
 	// to reduce the amount of memory allocated divide the length by 2
 	// as encoded hex string are of length * 2
 	bytes := make([]byte, (length+1)/2)
@@ -37,10 +32,10 @@ func (d DevEUIGenerator) GeneratDevEUI(length int) (devEUI string, err error) {
 
 	devEUI = hex.EncodeToString(bytes)[:length]
 
-	// If short code is know, recursively generate again until short code is not known
+	// If short code is known, recursively generate again until short code is not known
 	shortCode := devEUI[len(devEUI)-5:]
 	if _, ok := d.known.Load(shortCode); ok {
-		devEUI, err = d.GeneratDevEUI(length)
+		devEUI, err = d.GenerateDevEUI(length)
 	}
 	d.known.Store(shortCode, true)
 

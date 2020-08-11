@@ -41,13 +41,13 @@ func (r RegistrationBatcher) RegisterInParallel(requiredDevEUIS int) ([]string, 
 	// Run Regestration goroutines
 	for index := 0; index < r.maxInFlightRequests; index++ {
 		r.waitGroup.Add(1)
-		go r.routines.RunBatch(parallelRegistrationConfig{
-			registeredChannel: registeredChannel,
-			requiredDevEUIS:   requiredDevEUIS / r.maxInFlightRequests,
-			shutdownChannel:   shutdownChannel,
-			errorChannel:      errorChannel,
-			waitGroup:         r.waitGroup,
-			goroutineIndex:    index,
+		go r.routines.RunBatch(ParallelRegistrationConfig{
+			RegisteredChannel: registeredChannel,
+			RequiredDevEUIS:   requiredDevEUIS / r.maxInFlightRequests,
+			ShutdownChannel:   shutdownChannel,
+			ErrorChannel:      errorChannel,
+			WaitGroup:         r.waitGroup,
+			GoroutineIndex:    index,
 		})
 	}
 
