@@ -29,6 +29,11 @@ func main() {
 
 		// Check Cache
 		key := c.Get("Idempotency-key")
+		if len(key) == 0 {
+			c.Status(403).Send("Idempotency-key invalid")
+			return
+		}
+
 		if cache, err := responseCache.Load(key); err == nil {
 			err = c.Status(200).JSON(cache.Payload)
 			if err != nil {
