@@ -4,6 +4,7 @@ import (
 	"github.com/sonyarouje/simdb/db"
 )
 
+// Setup db type
 type IdempotentPayload struct {
 	Key     string        `json:"key"`
 	Payload DevEUIPayload `json:"payload"`
@@ -34,6 +35,7 @@ type ResponseCache struct {
 	Driver *db.Driver
 }
 
+// Load loads data from the simple db by key will return an error if no data is found
 func (r ResponseCache) Load(key string) (*IdempotentPayload, error) {
 	idempotentPayload := &IdempotentPayload{}
 	err := r.Driver.Open(IdempotentPayload{}).Where("key", "=", key).First().AsEntity(idempotentPayload)
@@ -43,6 +45,7 @@ func (r ResponseCache) Load(key string) (*IdempotentPayload, error) {
 	return idempotentPayload, nil
 }
 
+// Store stores data by key, if the key already exists it will attempt to update the record instead
 func (r ResponseCache) Store(key string, data DevEUIPayload) error {
 	_, err := r.Load(key)
 	if err == nil {
