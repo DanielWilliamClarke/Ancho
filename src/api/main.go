@@ -61,10 +61,12 @@ func main() {
 		}
 		fmt.Println("---------------------------------------------------")
 
-		// Store payload in cache
+		// Package payload
 		payload := DevEUIPayload{
 			DevEUIs: registeredDevEUIs,
 		}
+
+		// Store payload in cache
 		err = responseCache.Store(key, payload)
 		if err != nil {
 			log.Printf("Could not store idempotent payload data: %v", err)
