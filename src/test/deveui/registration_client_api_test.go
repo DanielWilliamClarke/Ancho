@@ -37,7 +37,8 @@ func SetupRegistrationTestsWithNew() registrationTestUtils {
 
 func Test_Integration_HitRegistrationEndpoint(t *testing.T) {
 
-	// the aim of this test is to ensure that the client api can hit the endpoint
+	// the aim of this test is to ensure that the client api can hit the endpoint successfully
+
 	utils := SetupRegistrationTestsWithNew()
 
 	devEUI, err := utils.generator.GenerateDevEUI(16)
@@ -53,7 +54,8 @@ func Test_Integration_HitRegistrationEndpoint(t *testing.T) {
 
 func Test_Integration_Are422ErrorsRandom(t *testing.T) {
 
-	// the aim of this test was to confirm my suspicions that the API was no reliable
+	// the aim of this test was to confirm my suspicions that the API was not reliable
+
 	utils := SetupRegistrationTestsWithNew()
 	devEUI, _ := utils.generator.GenerateDevEUI(16)
 
