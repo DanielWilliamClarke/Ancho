@@ -117,6 +117,8 @@ _____ / /_  / / __ \/ _ \/ ___/   PORT     3000     THREADS 4
 > Run a request in a seperate terminal by running the following command
 
 ```bash
+# A Idempotency-key header is required to facilitate Idempotency within the the API
+
 curl -X PUT localhost:3000/v1/api/register -H 'Idempotency-key: your-key' &
 #...
 {"deveuis":["5d9f84fe12504efb","3264c0c85616186d","02799aedd50d203c", ... (up to 100 DevEUIs)]}
