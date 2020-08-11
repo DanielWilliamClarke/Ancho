@@ -8,6 +8,10 @@ import (
 	"syscall"
 )
 
+type DevEUIPayload struct {
+	DevEUIs []string `json:"deveuis"`
+}
+
 type IRegistrationBatcher interface {
 	RegisterInParallel(requiredDevEUIS int) ([]string, []error)
 }

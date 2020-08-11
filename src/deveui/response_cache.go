@@ -1,4 +1,4 @@
-package main
+package deveui
 
 import (
 	"github.com/sonyarouje/simdb/db"

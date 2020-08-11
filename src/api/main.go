@@ -11,13 +11,9 @@ import (
 	"dwc.com/ancho/deveui"
 )
 
-type DevEUIPayload struct {
-	DevEUIs []string `json:"deveuis"`
-}
-
 func main() {
 
-	responseCache, err := NewResponseCache()
+	responseCache, err := deveui.NewResponseCache()
 	if err != nil {
 		log.Fatalf("Cannot create cache: %v", err)
 	}
@@ -42,7 +38,7 @@ func main() {
 		}
 		// Store empty payload to ensure any requests that occur before this one completes,
 		// does not try to trigger more registrations with the same key
-		responseCache.Store(key, DevEUIPayload{
+		responseCache.Store(key, deveui.DevEUIPayload{
 			DevEUIs: []string{},
 		})
 
@@ -62,7 +58,7 @@ func main() {
 		fmt.Println("---------------------------------------------------")
 
 		// Package payload
-		payload := DevEUIPayload{
+		payload := deveui.DevEUIPayload{
 			DevEUIs: registeredDevEUIs,
 		}
 
