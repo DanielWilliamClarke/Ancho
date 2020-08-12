@@ -22,7 +22,7 @@
   go build ./api
 
   ./api.exe #windows
-  ./api #linu
+  ./api #linux
 ```
 
 ## Test
