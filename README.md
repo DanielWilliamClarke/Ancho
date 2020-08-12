@@ -114,7 +114,7 @@ _____ / /_  / / __ \/ _ \/ ___/   PORT     3000     THREADS 4
     /_/   /_/_.___/\___/_/1.13.3  HANDLERS 2        PID     16016
 ```
 
-> Run a request in a seperate terminal by running the following command
+> Run a request in a seperate terminal by running the following commands
 
 ```bash
 # A Idempotency-key header is required to facilitate Idempotency within the the API
