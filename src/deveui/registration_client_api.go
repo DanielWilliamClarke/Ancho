@@ -29,13 +29,13 @@ type LoRaWANClientAPI struct {
 }
 
 type devEUIBody struct {
-	devEUI string `json:"deveui"`
+	DevEUI string `json:"deveui"`
 }
 
 // Register registers a given devEUI with the test LoRaWAN api
 func (l LoRaWANClientAPI) Register(devEUI string) error {
 
-	requestBody, err := json.Marshal(devEUIBody{devEUI: devEUI})
+	requestBody, err := json.Marshal(devEUIBody{DevEUI: devEUI})
 	if err != nil {
 		log.Printf("Could not marshal deveui into body: %v", err)
 		return err
